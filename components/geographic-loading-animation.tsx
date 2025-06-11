@@ -2,6 +2,41 @@
 
 import { useEffect, useState } from "react"
 import { svgBoundaries } from "../data/split_boundaries_ts"
+// @ts-ignore
+import bounds from "svg-path-bounds" // at the top of your file
+
+function getBoundsForPaths(paths: string[]) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const path of paths) {
+    try {
+      const [x0, y0, x1, y1] = bounds(path)
+      minX = Math.min(minX, x0)
+      minY = Math.min(minY, y0)
+      maxX = Math.max(maxX, x1)
+      maxY = Math.max(maxY, y1)
+    } catch (e) { }
+  }
+  return [minX, minY, maxX, maxY]
+}
+
+function getViewBoxForPaths(paths: string[], padding: number = 5) {
+  const [minX, minY, maxX, maxY] = getBoundsForPaths(paths)
+  const width = maxX - minX
+  const height = maxY - minY
+  return [
+    minX - padding,
+    minY - padding,
+    width + 2 * padding,
+    height + 2 * padding
+  ].join(" ")
+}
+
+function getContainerBoundsForScale(scaleIndex: number, scaleMapping: any[], svgBoundaries: any) {
+  const containerIndex = Math.min(scaleIndex + 1, scaleMapping.length - 1)
+  const containerKey = scaleMapping[containerIndex].key
+  const containerBoundaries = svgBoundaries[containerKey] || []
+  return getViewBoxForPaths(containerBoundaries)
+}
 
 interface GeographicLoadingAnimationProps {
   size?: number
@@ -16,14 +51,16 @@ export function GeographicLoadingAnimation({ size = 120, isSlowMode = false }: G
   const scaleMapping = [
     { key: "ward", label: "Wards" },
     { key: "borough", label: "Borough" },
+    { key: "boroughs", lavel: "Boroughs"},
     { key: "city", label: "London" },
+    { key: "counties", label: "Counties" },
     { key: "country", label: "United Kingdom" },
     { key: "continent", label: "Europe" },
     { key: "continents", label: "World" },
   ]
 
   useEffect(() => {
-    const scales = [0, 1, 2, 3, 4, 5]
+    const scales = [0, 1, 2, 3, 4, 5, 6]
     let scaleIndex = 0
     let direction = 1
 
@@ -62,6 +99,7 @@ export function GeographicLoadingAnimation({ size = 120, isSlowMode = false }: G
     return svgBoundaries[scaleKey] || []
   }
 
+
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       {/* Luminous center point */}
@@ -83,7 +121,7 @@ export function GeographicLoadingAnimation({ size = 120, isSlowMode = false }: G
       <svg
         width={size}
         height={size}
-        viewBox={`-60 -60 120 120`}
+        viewBox={getContainerBoundsForScale(currentScale, scaleMapping, svgBoundaries)}
         className="absolute inset-0"
         style={{ overflow: "visible" }}
       >
@@ -91,6 +129,10 @@ export function GeographicLoadingAnimation({ size = 120, isSlowMode = false }: G
         {scaleMapping.map((scale, scaleIndex) => {
           const boundaries = getCurrentBoundaries(scaleIndex)
           const isActive = currentScale === scaleIndex
+          const isContainer = currentScale + 1 === scaleIndex
+
+          // Only render the active scale and its immediate container (if desired)
+          if (!(isActive || isContainer)) return null
 
           return (
             <g
