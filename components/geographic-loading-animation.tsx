@@ -5,170 +5,170 @@ import { svgBoundaries } from "../data/split_boundaries_ts"
 // @ts-ignore
 import bounds from "svg-path-bounds" // at the top of your file
 
-function getBoundsForPaths(paths: string[]) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-  for (const path of paths) {
-    try {
-      const [x0, y0, x1, y1] = bounds(path)
-      minX = Math.min(minX, x0)
-      minY = Math.min(minY, y0)
-      maxX = Math.max(maxX, x1)
-      maxY = Math.max(maxY, y1)
-    } catch (e) { }
-  }
-  return [minX, minY, maxX, maxY]
-}
+// Expecting this structure:
+const scaleMapping = [
+  { key: "ward", label: "Wards" },               // INTERIOR: Wards of BD
+  { key: "borough", label: "Borough" },          // BOUNDARY: BD boundary
+  { key: "boroughs", label: "Boroughs" },        // INTERIOR: Boroughs of London
+  { key: "city", label: "London" },              // BOUNDARY: London
+  { key: "counties", label: "Counties" },        // INTERIOR: Counties
+  { key: "country", label: "United Kingdom" },   // BOUNDARY: UK
+  { key: "europe_countries", label: "Countries" },// INTERIOR: Countries in Europe
+  { key: "continent", label: "Europe" },         // BOUNDARY: Europe
+];
 
-function getViewBoxForPaths(paths: string[], padding: number = 5) {
-  const [minX, minY, maxX, maxY] = getBoundsForPaths(paths)
-  const width = maxX - minX
-  const height = maxY - minY
-  return [
-    minX - padding,
-    minY - padding,
-    width + 2 * padding,
-    height + 2 * padding
-  ].join(" ")
-}
+// --- Create animation step plan: alternate boundary/interior ---
+const steps = [
+  { type: "boundary", key: "borough" },
+  { type: "interior", key: "ward" },
+  { type: "boundary", key: "city" },
+  { type: "interior", key: "boroughs" },
+  { type: "boundary", key: "country" },
+  { type: "interior", key: "counties" },
+  { type: "boundary", key: "continent" },
+  { type: "interior", key: "europe_countries" },
+];
 
-function getContainerBoundsForScale(scaleIndex: number, scaleMapping: any[], svgBoundaries: any) {
-  const containerIndex = Math.min(scaleIndex + 1, scaleMapping.length - 1)
-  const containerKey = scaleMapping[containerIndex].key
-  const containerBoundaries = svgBoundaries[containerKey] || []
-  return getViewBoxForPaths(containerBoundaries)
-}
+export function GeographicLoadingAnimation({
+  size = 120,
+  onComplete,
+}: {
+  size?: number;
+  onComplete?: () => void;
+}) {
+  const [stageIndex, setStageIndex] = useState(0);
+  const [phase, setPhase] = useState<"boundary-glitch-in" | "interior-fill" | "boundary-glitch-out" | "empty">("boundary-glitch-in");
+  const [glitchState, setGlitchState] = useState(false);
+  const [filledCount, setFilledCount] = useState(0);
 
-interface GeographicLoadingAnimationProps {
-  size?: number
-  isSlowMode?: boolean
-}
-
-export function GeographicLoadingAnimation({ size = 120, isSlowMode = false }: GeographicLoadingAnimationProps) {
-  const [currentScale, setCurrentScale] = useState(0)
-  const [isCollapsing, setIsCollapsing] = useState(false)
-
-  // Map animation scales to your data structure
-  const scaleMapping = [
-    { key: "ward", label: "Wards" },
-    { key: "borough", label: "Borough" },
-    { key: "boroughs", lavel: "Boroughs"},
-    { key: "city", label: "London" },
-    { key: "counties", label: "Counties" },
-    { key: "country", label: "United Kingdom" },
-    { key: "continent", label: "Europe" },
-    { key: "continents", label: "World" },
-  ]
-
+  // Animation Phases
   useEffect(() => {
-    const scales = [0, 1, 2, 3, 4, 5, 6]
-    let scaleIndex = 0
-    let direction = 1
-
-    // Slower timing for post-loading animation
-    const intervalTime = isSlowMode ? 800 : 450
-
-    const animationInterval = setInterval(() => {
-      if (direction === 1) {
-        if (scaleIndex < scales.length - 1) {
-          scaleIndex++
-          setCurrentScale(scales[scaleIndex])
-        } else {
-          direction = -1
-          setIsCollapsing(true)
-          scaleIndex--
-          setCurrentScale(scales[scaleIndex])
+    let timer: any;
+    if (phase === "boundary-glitch-in") {
+      setFilledCount(0);
+      setGlitchState(false);
+      let count = 0;
+      timer = setInterval(() => {
+        setGlitchState(g => !g);
+        count++;
+        if (count > 3) {
+          clearInterval(timer);
+          setGlitchState(false); // End on unfilled!
+          setTimeout(() => setPhase("interior-fill"), 180);
         }
-      } else {
-        if (scaleIndex > 0) {
-          scaleIndex--
-          setCurrentScale(scales[scaleIndex])
-        } else {
-          direction = 1
-          setIsCollapsing(false)
-          scaleIndex = 0
-          setCurrentScale(scales[scaleIndex])
-        }
+      }, 90);
+      return () => clearInterval(timer);
+    }
+    if (phase === "interior-fill") {
+      setGlitchState(false);
+      setFilledCount(0);
+      const paths = svgBoundaries[scaleMapping[stageIndex].key] || [];
+      if (!paths.length) {
+        setTimeout(() => setPhase("boundary-glitch-out"), 300);
+        return;
       }
-    }, intervalTime)
+      let i = 0;
+      timer = setInterval(() => {
+        i++;
+        setFilledCount(i);
+        if (i >= paths.length) {
+          clearInterval(timer);
+          setTimeout(() => setPhase("boundary-glitch-out"), 450);
+        }
+      }, 45);
+      return () => clearInterval(timer);
+    }
+    if (phase === "boundary-glitch-out") {
+      setFilledCount(0);
+      setGlitchState(false);
+      let count = 0;
+      timer = setInterval(() => {
+        setGlitchState(g => !g);
+        count++;
+        if (count > 3) {
+          clearInterval(timer);
+          setGlitchState(false);
+          // Add empty pause before next boundary glitch-in
+          setPhase("empty");
+          setTimeout(() => {
+            setPhase("boundary-glitch-in");
+            setStageIndex(i => i + 2);
+          }, 200); // brief empty frame
+        }
+      }, 90);
+      return () => clearInterval(timer);
+    }
+    if (phase === "empty") {
+      setGlitchState(false);
+      setFilledCount(0);
+      // All shapes hidden during empty
+    }
+  }, [stageIndex, phase, svgBoundaries, scaleMapping]);
 
-    return () => clearInterval(animationInterval)
-  }, [isSlowMode])
+  // On complete
+  useEffect(() => {
+    if (stageIndex >= scaleMapping.length) {
+      if (onComplete) onComplete();
+    }
+  }, [stageIndex, scaleMapping.length, onComplete]);
 
-  const getCurrentBoundaries = (scaleIndex: number) => {
-    const scaleKey = scaleMapping[scaleIndex]?.key
-    return svgBoundaries[scaleKey] || []
-  }
-
+  // Get keys/paths for this stage
+  const isBoundaryPhase = phase === "boundary-glitch-in" || phase === "boundary-glitch-out";
+  const boundaryKey = scaleMapping[stageIndex + 1]?.key;
+  const interiorKey = scaleMapping[stageIndex]?.key;
+  const boundaryPaths = svgBoundaries[boundaryKey] || [];
+  const interiorPaths = svgBoundaries[interiorKey] || [];
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      {/* Luminous center point */}
-      <div
-        className={`absolute w-1 h-1 bg-primary rounded-full transition-all duration-500 ${
-          isCollapsing && currentScale === 0
-            ? "scale-150 opacity-100 shadow-[0_0_20px_hsl(var(--primary))]"
-            : "scale-100 opacity-60"
-        }`}
-        style={{
-          zIndex: 10,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-        }}
-      />
 
-      {/* Geographic layers - properly centered SVG */}
       <svg
         width={size}
         height={size}
-        viewBox={getContainerBoundsForScale(currentScale, scaleMapping, svgBoundaries)}
+        viewBox="-60 -60 120 120"
         className="absolute inset-0"
         style={{ overflow: "visible" }}
       >
-        {/* Render current scale boundaries */}
-        {scaleMapping.map((scale, scaleIndex) => {
-          const boundaries = getCurrentBoundaries(scaleIndex)
-          const isActive = currentScale === scaleIndex
-          const isContainer = currentScale + 1 === scaleIndex
-
-          // Only render the active scale and its immediate container (if desired)
-          if (!(isActive || isContainer)) return null
-
-          return (
-            <g
-              key={scale.key}
-              className={`transition-all duration-700 ease-in-out ${
-                isActive ? "opacity-100 scale-100" : "opacity-30 scale-75"
-              }`}
-            >
-              {boundaries.map((boundaryPath, pathIndex) => (
-                <path
-                  key={`${scale.key}-${pathIndex}`}
-                  d={boundaryPath}
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={scaleIndex === 5 ? "2" : scaleIndex === 4 ? "1.5" : scaleIndex === 3 ? "1.2" : "0.8"}
-                  opacity={isActive ? 0.9 - pathIndex * 0.1 : 0.3}
-                />
-              ))}
-            </g>
-          )
-        })}
-
-        {/* Concentric circles for scale reference - properly centered */}
-        <g className="opacity-20">
+        {/* Only show boundary on glitch phases */}
+        {isBoundaryPhase && phase !== "empty" && boundaryPaths.map((boundaryPath, i) => (
+          <path
+            key={`boundary-${i}`}
+            d={boundaryPath}
+            fill={glitchState ? "hsl(var(--primary))" : "none"}
+            stroke="none"
+            strokeWidth={0}
+            opacity={glitchState ? 0.96 : 0.0}
+            style={{
+              transition: "fill 120ms, opacity 120ms",
+            }}
+          />
+        ))}
+        {/* Only show interiors when filling, no strokes */}
+        {phase === "interior-fill" && interiorPaths.map((p, i) => (
+          <path
+            key={`interior-${i}`}
+            d={p}
+            fill={i < filledCount ? "hsl(var(--primary))" : "none"}
+            stroke={i < filledCount ? "hsl(var(--primary))" : "none"}
+            opacity={i < filledCount ? 0.96 : 0.0}
+            style={{
+              transition: "fill 200ms, opacity 220ms",
+            }}
+          />
+        ))}
+        {/* Optional: Reference circles */}
+        <g className="opacity-10">
           <circle cx="0" cy="0" r="15" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.2" />
           <circle cx="0" cy="0" r="25" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.2" />
           <circle cx="0" cy="0" r="35" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.2" />
         </g>
       </svg>
-
-      {/* Scale indicator */}
+      {/* Scale label */}
       <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
         <div className="text-xs text-muted-foreground font-medium tracking-widest uppercase text-center">
-          {scaleMapping[currentScale]?.label}
+          {scaleMapping[stageIndex]?.label}
         </div>
       </div>
     </div>
-  )
+  );
 }

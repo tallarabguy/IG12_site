@@ -1,12 +1,12 @@
 import { wardsPaths } from "./wards"
 import { boroughPaths } from "./boroughPaths"
 import { cityPaths } from "./cityPaths"
-import { countryPaths } from "./countryPaths"
-import { europePaths } from "./europePaths"
+import { countryPaths } from "./countryPaths_fixed"
+import { europePaths } from "./europePaths_fixed"
 //import { continentsPaths } from "./continents"
-import { boroughsPaths } from "./boroughsPaths"
-import { countiesPaths } from "./countiesPaths"
-import { europeCountriesPaths } from "./countriesPaths"
+import { boroughsPaths } from "./boroughsPaths_simplified"
+import { countiesPaths } from "./countiesPaths_cleaned_simplified"
+import { countriesPaths } from "./countriesPaths_fixed"
 
 export const svgBoundaries: Record<string, string[]> = {
   ward: wardsPaths,
@@ -17,5 +17,5 @@ export const svgBoundaries: Record<string, string[]> = {
   //continents: continentsPaths,
   counties: countiesPaths,
   country: countryPaths,
-  europe_countries: europeCountriesPaths,
+  europe_countries: countriesPaths,
 }

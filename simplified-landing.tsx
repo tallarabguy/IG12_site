@@ -16,22 +16,15 @@ export default function IG12SimplifiedLanding() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  useEffect(() => {
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false)
-      // Show scroll indicator after loading completes
-      setTimeout(() => {
-        setShowScrollIndicator(true)
-      }, 500)
-    }, 3000)
-
-    return () => clearTimeout(loadingTimer)
-  }, [])
-
   const scrollToCallToAction = () => {
     const ctaSection = document.getElementById("cta-section")
     ctaSection?.scrollIntoView({ behavior: "smooth" })
   }
+  
+  const handleLoadingAnimationComplete = () => {
+    setIsLoading(false);
+    setTimeout(() => setShowScrollIndicator(true), 500);
+  };
 
   // Mock async function simulating successful submission
   const mockSubmitToBackend = async (data: typeof formData) => {
@@ -116,7 +109,7 @@ export default function IG12SimplifiedLanding() {
 
             {/* Geographic Animation positioned below text - ONLY during loading */}
             <div className="mt-4">
-              <GeographicLoadingAnimation size={120} isSlowMode={false} />
+              <GeographicLoadingAnimation size={120} onComplete={handleLoadingAnimationComplete} />
             </div>
           </div>
         ) : (
@@ -141,18 +134,20 @@ export default function IG12SimplifiedLanding() {
             {/* NO ANIMATION HERE - removed the slow animation */}
 
             {/* Geometric Scroll Indicator */}
-            {showScrollIndicator && (
-              <div
-                className="flex flex-col items-center space-y-4 cursor-pointer group transition-all duration-500"
-                onClick={scrollToCallToAction}
-              >
-                <div className="w-px h-16 bg-primary opacity-60 group-hover:opacity-100 transition-opacity"></div>
-                <div className="border border-primary p-3 group-hover:bg-primary/10 transition-colors">
-                  <ChevronDown className="w-4 h-4 text-primary animate-bounce" />
-                </div>
-                <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">Continue</p>
+            
+            <div
+              className={`flex flex-col items-center space-y-4 cursor-pointer group transition-all duration-500
+                ${showScrollIndicator ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"}
+              `}
+              onClick={scrollToCallToAction}
+            >
+              <div className="w-px h-16 bg-primary opacity-60 group-hover:opacity-100 transition-opacity"></div>
+              <div className="border border-primary p-3 group-hover:bg-primary/10 transition-colors">
+                <ChevronDown className="w-4 h-4 text-primary animate-bounce" />
               </div>
-            )}
+              <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">Continue</p>
+            </div>
+            
           </div>
         )}
       </section>
