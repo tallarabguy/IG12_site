@@ -19,15 +19,23 @@ export default function GlobeAnimation({
   onComplete,
   spinSpeed = 0.15,
   size = 120,
+}: {
+  onComplete?: () => void;
+  spinSpeed?: number;
+  size?: number;
 }) {
-  const [geojson, setGeojson] = useState(null);
-  const [centroids, setCentroids] = useState([]);
-  const [rotation, setRotation] = useState([0, 0]);
-  const [currentContinent, setCurrentContinent] = useState(0);
-  const [filledContinents, setFilledContinents] = useState([]);
-  const [animationStep, setAnimationStep] = useState("animating"); // "animating", "glitching", "filling", "done", "glitchOut"
-  const [glitchState, setGlitchState] = useState(false);
-  const svgRef = useRef();
+
+  const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection | null>(null)
+  const [centroids, setCentroids] = useState<[number, number][]>([]);
+  const [rotation, setRotation] = useState<[number, number]>([0, 0]);
+  const [currentContinent, setCurrentContinent] = useState<number>(0);
+  const [filledContinents, setFilledContinents] = useState<number[]>([]);
+  const [animationStep, setAnimationStep] = useState<
+    "animating" | "glitching" | "filling" | "done" | "glitchOut" | "empty"
+  >("animating");
+  const [glitchState, setGlitchState] = useState<boolean>(false);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
 
   // Load GeoJSON and set up centroids
   useEffect(() => {
@@ -35,10 +43,11 @@ export default function GlobeAnimation({
       .then((res) => res.json())
       .then((gj) => {
         setGeojson(gj);
-        const cents = continentOrder.map((name) => {
-          const feat = gj.features.find((f) => f.properties.CONTINENT === name);
-          return feat ? geoCentroid(feat) : [0, 0];
+        const cents: [number, number][] = continentOrder.map((name) => {
+          const feat = gj.features.find((f: any) => f.properties.CONTINENT === name);
+          return feat ? geoCentroid(feat) as [number, number] : [0, 0];
         });
+
         setCentroids(cents);
         setRotation(cents[0]);
       });
@@ -47,7 +56,7 @@ export default function GlobeAnimation({
   // Spin to each continent in order (with custom speed and direction fix)
   useEffect(() => {
     if (!centroids.length || !geojson) return;
-    let frame;
+    let frame: number;
     if (animationStep === "animating") {
       const [targetLon, targetLat] = centroids[currentContinent] || [0, 0];
       function animateToTarget() {
@@ -89,7 +98,12 @@ export default function GlobeAnimation({
         frame = requestAnimationFrame(animateToTarget);
       }
       animateToTarget();
-      return () => frame && cancelAnimationFrame(frame);
+      return () => {
+        if (frame) {
+          cancelAnimationFrame(frame);
+        }
+      };
+
     }
   }, [animationStep, centroids, currentContinent, geojson, spinSpeed]);
 
@@ -185,9 +199,11 @@ export default function GlobeAnimation({
       .data(geojson.features)
       .join("path")
       .attr("d", pathGenerator)
-      .attr("fill", (d) => {
+      .attr("fill", (d: any) => {
+        const props = d.properties as { CONTINENT?: string } | null;
+        const continent = props?.CONTINENT ?? "";
         const idx = continentOrder.findIndex(
-          (name) => name === d.properties.CONTINENT
+          (name) => name === continent
         );
         // Glitching for Core Europe only
         if (currentContinent === 0 && animationStep === "glitching") {
