@@ -103,7 +103,7 @@ export default function IG12SimplifiedLanding() {
             {/* Loading Text */}
             <div className="text-center space-y-4">
               <p className="text-muted-foreground font-medium tracking-wide text-sm uppercase">
-                Mapping Nested Geographies
+                Loading...
               </p>
             </div>
 

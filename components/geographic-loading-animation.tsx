@@ -9,16 +9,17 @@ import bounds from "svg-path-bounds" // at the top of your file
 
 // Expecting this structure:
 const scaleMapping = [
-  { key: "ward", label: "Wards" },               // INTERIOR: Wards of BD
-  { key: "borough", label: "Borough" },          // BOUNDARY: BD boundary
-  { key: "boroughs", label: "Boroughs" },        // INTERIOR: Boroughs of London
-  { key: "city", label: "London" },              // BOUNDARY: London
-  { key: "counties", label: "Counties" },        // INTERIOR: Counties
-  { key: "country", label: "United Kingdom" },   // BOUNDARY: UK
-  { key: "europe_countries", label: "Countries" },// INTERIOR: Countries in Europe
-  { key: "continent", label: "Europe" },         // BOUNDARY: Europe
-  { key: "globe", label: "World Globe" }
+  { key: "ward", label: "Why do certain places pull us in?" },                  // INTERIOR: Wards of BD
+  { key: "borough", label: "Borough" },                                         // BOUNDARY: BD boundary
+  { key: "boroughs", label: "Which invisible forces guide our daily journeys?" }, // INTERIOR: Boroughs of London
+  { key: "city", label: "London" },                                             // BOUNDARY: London
+  { key: "counties", label: "Who is included - and who is excluded - in our stories about place?" }, // INTERIOR: Counties
+  { key: "country", label: "United Kingdom" },                                  // BOUNDARY: UK
+  { key: "europe_countries", label: "How do we navigate the convergence of global cultures in local life?" }, // INTERIOR: Countries in Europe
+  { key: "continent", label: "Europe" },                                        // BOUNDARY: Europe
+  { key: "globe", label: "Ultimately, where is ‘home’?" }                       // INTERIOR: Global view
 ];
+
 
 // --- Create animation step plan: alternate boundary/interior ---
 const steps = [
@@ -140,6 +141,7 @@ export function GeographicLoadingAnimation({
   const interiorPaths = svgBoundaries[interiorKey] || [];
 
   return (
+    <div className="flex flex-col items-center w-full">
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       {stageIndex < scaleMapping.length - 1 ? (
         <svg
@@ -208,13 +210,15 @@ export function GeographicLoadingAnimation({
           }}
         />
       )}
+    </div>
 
-      {/* Scale label */}
-      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-        <div className="text-xs text-muted-foreground font-medium tracking-widest uppercase text-center">
-          {scaleMapping[stageIndex]?.label}
-        </div>
-      </div>
+    {/* Scale label */}
+    <div className="mt-6 px-6 w-full flex justify-center">
+      <p className="text-muted-foreground font-medium tracking-wide text-sm uppercase text-center max-w-md">
+        {scaleMapping[stageIndex]?.label}
+      </p>
+    </div>
+
     </div>
   );
 }
