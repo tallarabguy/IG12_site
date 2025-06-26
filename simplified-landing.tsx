@@ -4,15 +4,35 @@ import { useState, useEffect, type FormEvent } from "react"
 import { ChevronDown, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { GeographicLoadingAnimation } from "./components/geographic-loading-animation"
+import { sendConfirmationEmail } from '@/lib/email';
+import { saveToGoogleSheets } from '@/lib/saveToGoogleSheets';
+
+const sampleIdentities = [
+  { firstName: "Ada", lastName: "Lovelace", email: "ada@analyticalengine.org" },
+  { firstName: "Nelson", lastName: "Mandela", email: "nelson@freedomcharter.za" },
+  { firstName: "Zaha", lastName: "Hadid", email: "zaha@fluidarchitectures.net" },
+  { firstName: "Octavia", lastName: "Butler", email: "octavia@patternmaster.net" },
+  { firstName: "David", lastName: "Attenborough", email: "david@voiceoftheearth.uk" },
+  { firstName: "Nina", lastName: "Simone", email: "nina@mississippigoddam.com" },
+  { firstName: "W.E.B.", lastName: "Du Bois", email: "web@thesoulofthefight.org" },
+  { firstName: "Angela", lastName: "Davis", email: "angela@abolitionuniversity.org" },
+  { firstName: "Frida", lastName: "Kahlo", email: "frida@casaazul.mx" },
+  { firstName: "Patsy", lastName: "Mink", email: "patsy@titleixfoundation.gov" },
+  { firstName: "Yayoi", lastName: "Kusama", email: "yayoi@infinityroom.jp" },
+  { firstName: "James", lastName: "Baldwin", email: "james@firethistime.net" },
+];
+
 
 export default function IG12SimplifiedLanding() {
   const [isLoading, setIsLoading] = useState(true)
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
   })
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -26,24 +46,40 @@ export default function IG12SimplifiedLanding() {
     setTimeout(() => setShowScrollIndicator(true), 500);
   };
 
-  // Mock async function simulating successful submission
-  const mockSubmitToBackend = async (data: typeof formData) => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+  const [placeholders, setPlaceholders] = useState({
+    firstName: "John",
+    lastName: "Smith",
+    email: "john.smith@domain.com",
+  });
 
-    // TODO: Replace with actual backend integration
-    // 1. Send data to Google Sheets API
-    // await saveToGoogleSheets(data)
+  useEffect(() => {
+    const randomIdentity =
+      sampleIdentities[Math.floor(Math.random() * sampleIdentities.length)];
+    setPlaceholders({
+      firstName: randomIdentity.firstName,
+      lastName: randomIdentity.lastName,
+      email: randomIdentity.email,
+    });
+  }, []);
 
-    // 2. Send confirmation email
-    // await sendConfirmationEmail(data.email, data.firstName)
+    const submitToBackend = async (data: typeof formData) => {
+      try {
+        // 1. Save to Google Sheets
+        await saveToGoogleSheets(data); // <-- You implement this
 
-    // 3. Add to mailing list/CRM
-    // await addToMailingList(data)
+        // 2. Send Email via Resend
+        await sendConfirmationEmail(data.email, data.firstName); // <-- You implement this
 
-    console.log("Form submitted:", data)
-    return { success: true }
-  }
+        // 3. Add to CRM/mailing list (optional)
+        // await addToMailingList(data);
+
+        return { success: true };
+      } catch (err) {
+        console.error("Backend submission failed:", err);
+        return { success: false, error: err };
+      }
+    };
+
 
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -57,7 +93,7 @@ export default function IG12SimplifiedLanding() {
 
     try {
       // TODO: Replace mockSubmitToBackend with actual API call
-      const result = await mockSubmitToBackend(formData)
+      const result = await submitToBackend(formData);
 
       if (result.success) {
         setIsSubmitted(true)
@@ -246,7 +282,7 @@ export default function IG12SimplifiedLanding() {
                           required
                           value={formData.firstName}
                           onChange={(e) => handleInputChange("firstName", e.target.value)}
-                          placeholder="John"
+                          placeholder={placeholders.firstName}
                           className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-muted-foreground focus:outline-none focus:border-primary/80 transition-colors"
                         />
                       </div>
@@ -265,7 +301,7 @@ export default function IG12SimplifiedLanding() {
                           required
                           value={formData.lastName}
                           onChange={(e) => handleInputChange("lastName", e.target.value)}
-                          placeholder="Smith"
+                          placeholder={placeholders.lastName}
                           className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-muted-foreground focus:outline-none focus:border-primary/80 transition-colors"
                         />
                       </div>
@@ -285,7 +321,7 @@ export default function IG12SimplifiedLanding() {
                         required
                         value={formData.email}
                         onChange={(e) => handleInputChange("email", e.target.value)}
-                        placeholder="john.smith@domain.com"
+                        placeholder={placeholders.email}
                         className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-muted-foreground focus:outline-none focus:border-primary/80 transition-colors"
                       />
                     </div>
