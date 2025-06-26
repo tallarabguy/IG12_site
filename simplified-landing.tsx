@@ -78,7 +78,7 @@ export default function IG12SimplifiedLanding() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] min-h-[100dvh] bg-background text-foreground">
       {/* Subtle Grid Background */}
       <div className="fixed inset-0 opacity-10 pointer-events-none">
         <svg width="100%" height="100%">
@@ -92,7 +92,7 @@ export default function IG12SimplifiedLanding() {
       </div>
 
       {/* Loading Section */}
-      <section className="h-screen flex flex-col items-center justify-center relative px-6">
+      <section className="min-h-[100dvh] flex flex-col items-center justify-center relative px-6">
         {isLoading ? (
           <div className="flex flex-col items-center space-y-8">
             {/* IG12 Logo */}
@@ -116,19 +116,27 @@ export default function IG12SimplifiedLanding() {
           <div className="flex flex-col items-center space-y-12 animate-fade-in max-w-4xl mx-auto text-center">
             {/* IG12 Logo-Style Welcome */}
             <div className="space-y-6">
-              <div className="border-2 border-primary p-8 lg:p-12 bg-background/90 backdrop-blur-sm">
+              <div className="border-2 border-primary p-8 lg:p-12 bg-background/90 backdrop-blur-sm max-w-4xl mx-auto">
+                {/* Logo */}
                 <div className="w-32 h-32 lg:w-40 lg:h-40 mx-auto mb-6">
                   <img src="/ig12-logo.jpg" alt="IG12 Consultancy Logo" className="w-full h-full object-contain" />
                 </div>
+
+                {/* Divider */}
                 <div className="h-px bg-primary w-full"></div>
-                <p className="text-lg md:text-xl text-muted-foreground mt-4 font-medium tracking-wide">
-                  RESEARCH CONSULTANCY
+
+                {/* Subtitle */}
+                <p className="text-lg md:text-xl text-muted-foreground mt-4 font-medium tracking-wide text-center">
+                  R&D FOR CIVIC INNOVATION
+                </p>
+
+                {/* Explainer */}
+                <p className="mt-8 text-base md:text-lg text-muted-foreground leading-relaxed text-center max-w-2xl mx-auto">
+                  We ask provocative questions about place, community, culture and systems to explore meaningful answers.
+                  <br /><br />
+                  Operating at the intersection of creativity, culture, community and critical inquiry – developing tools, insights and strategies to make our shared spaces and systems more inclusive, visible and meaningful.
                 </p>
               </div>
-
-              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Precision-driven insights for complex challenges. Data visualization and strategic research solutions.
-              </p>
             </div>
 
             {/* NO ANIMATION HERE - removed the slow animation */}
@@ -153,26 +161,70 @@ export default function IG12SimplifiedLanding() {
       </section>
 
       {/* Call to Action Section */}
-      <section id="cta-section" className="min-h-screen flex items-center justify-center px-6 lg:px-32">
+      <section id="cta-section" className="min-h-[100dvh] flex items-center justify-center px-6 lg:px-32">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center mt-12">
+
+
+            {/* Right Column - Geometric Visual */}
+            <div className="order-1 lg:order-2 lg:justify-self-end w-full">
+              <div className="relative w-full max-w-2xl mx-auto lg:mx-0">
+                <div className="border-2 border-primary p-8 bg-background/50 backdrop-blur-sm space-y-8">
+
+                  {/* Section Title */}
+                  <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase text-center">
+                    Works In Progress
+                  </h2>                  
+
+                  {/* Project 1 */}
+                  <div className="flex items-start space-x-4">
+                    <img src="/codex_cropped_final.png" alt="Project 1 Logo" className="w-10 h-10 object-contain" />
+                    <div>
+                      <h3 className="text-sm font-semibold tracking-wide uppercase text-primary">Project Codex</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        London is alive with cultural activity - events, initiatives, spaces and communities - but much of this vibrancy remains hidden beyond our immediate awareness. Codex sets out to change this by creating a comprehensive directory of London’s cultural entities, mapping the entire city's cultural landscape borough-by-borough. More than just a directory, Codex aims to become a living cultural heartbeat, tracking and visualising events and activities as they unfold.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-full h-px bg-primary opacity-30" />
+
+                  {/* Project 2 */}
+                  <div className="flex items-start space-x-4">
+                    <img src="/strata_cropped_final.png" alt="Project 2 Logo" className="w-10 h-10 object-contain" />
+                    <div>
+                      <h3 className="text-sm font-semibold tracking-wide uppercase text-primary">Project Strata</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Ever felt the arrangement of things around you subtly influences where you venture and explore? Strata investigates precisely this - exploring how the spatial layout of cultural entities shapes patterns of community engagement and cultural activity. Drawing on 'Space Syntax' - a discipline designed to analyse how spatial configurations influence social behaviour - this project combines insights from Codex’s directory with spatial network analysis to reveal hidden patterns between physical space and cultural participation.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Corner Squares */}
+                <div className="absolute -top-2 -right-2 w-4 h-4 border-2 border-primary bg-background"></div>
+                <div className="absolute -bottom-2 -left-2 w-4 h-4 border-2 border-primary bg-background"></div>
+              </div>
+            </div>
+
             {/* Left Column - Content */}
-            <div className="space-y-8 lg:justify-self-start">
+            <div className="order-2 lg:order-1 space-y-8 lg:justify-self-start">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">Coming Soon</p>
+                  <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">Full-site Under Development</p>
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight leading-tight">
-                    Strategic Research
+                    Join the
                     <br />
-                    Platform
+                    Conversation
                   </h2>
                 </div>
 
                 <div className="w-24 h-px bg-primary"></div>
 
                 <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-                  Advanced analytics and visualization tools for data-driven decision making. Join our research network
-                  for early access to cutting-edge insights.
+                  IG12 is an evolving exploration. Share your details below to receive our full manifesto - an invitation to dialogue, reflection and mutual learning. 
+                  Whether you're curious about our projects, eager to exchange ideas or simply want to connect, we'd love to hear from you.
                 </p>
               </div>
 
@@ -251,7 +303,7 @@ export default function IG12SimplifiedLanding() {
                         </>
                       ) : (
                         <>
-                          Request Early Access
+                          Request Manifesto
                           <ArrowRight className="ml-2 w-4 h-4" />
                         </>
                       )}
@@ -278,56 +330,18 @@ export default function IG12SimplifiedLanding() {
 
                 {!isSubmitted && (
                   <p className="text-xs text-muted-foreground text-center max-w-sm mx-auto leading-relaxed">
-                    Join our research network for exclusive insights and early access to our strategic analysis
-                    platform.
+                    Join us in shaping future conversations and deepening our understanding of the systems we inhabit.
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Right Column - Geometric Visual */}
-            <div className="lg:justify-self-end">
-              <div className="relative w-full max-w-md mx-auto lg:mx-0">
-                <div className="border-2 border-primary p-12 bg-background/50 backdrop-blur-sm">
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <div className="w-2 h-2 bg-primary"></div>
-                        <div className="text-xs text-muted-foreground font-medium tracking-wider">DATA INSIGHTS</div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <div className="w-full h-1 bg-border">
-                          <div className="w-3/4 h-full bg-primary"></div>
-                        </div>
-                        <div className="w-full h-1 bg-border">
-                          <div className="w-1/2 h-full bg-primary"></div>
-                        </div>
-                        <div className="w-full h-1 bg-border">
-                          <div className="w-5/6 h-full bg-primary"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="w-full h-px bg-primary opacity-30"></div>
-
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">
-                        Research Excellence
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute -top-2 -right-2 w-4 h-4 border-2 border-primary bg-background"></div>
-                <div className="absolute -bottom-2 -left-2 w-4 h-4 border-2 border-primary bg-background"></div>
-              </div>
-            </div>
           </div>
 
           <div className="mt-16 pt-8 border-t border-border text-center">
             <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase">
-              Platform Development • Q2 2024
+              IG12 • Constant Active Development • 2025
             </p>
           </div>
         </div>

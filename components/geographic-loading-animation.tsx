@@ -214,7 +214,7 @@ export function GeographicLoadingAnimation({
 
     {/* Scale label */}
     <div className="mt-6 px-6 w-full flex justify-center">
-      <p className="text-muted-foreground font-medium tracking-wide text-sm uppercase text-center max-w-md">
+      <p className="text-muted-foreground font-medium tracking-wide text-sm uppercase text-center max-w-md min-h-[3.5rem]">
         {scaleMapping[stageIndex]?.label}
       </p>
     </div>
