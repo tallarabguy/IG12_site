@@ -11,12 +11,22 @@ export async function saveToGoogleSheets(data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': secretKey!,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      secret: secretKey, // ✅ Add secret to the request body
+    }),
   });
 
-  const result = await res.json();
+  const text = await res.text();
+  console.log('Google Sheets raw response:', text);
+
+  let result;
+  try {
+    result = JSON.parse(text);
+  } catch (err) {
+    throw new Error('Invalid JSON response from Google Sheets webhook');
+  }
 
   if (!result.success) {
     throw new Error("Failed to save to Google Sheets: " + result.error);

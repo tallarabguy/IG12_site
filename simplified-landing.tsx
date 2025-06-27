@@ -4,8 +4,6 @@ import { useState, useEffect, type FormEvent } from "react"
 import { ChevronDown, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { GeographicLoadingAnimation } from "./components/geographic-loading-animation"
-import { sendConfirmationEmail } from '@/lib/email';
-import { saveToGoogleSheets } from '@/lib/saveToGoogleSheets';
 
 const sampleIdentities = [
   { firstName: "Ada", lastName: "Lovelace", email: "ada@analyticalengine.org" },
@@ -64,21 +62,32 @@ export default function IG12SimplifiedLanding() {
 
     const submitToBackend = async (data: typeof formData) => {
       try {
-        // 1. Save to Google Sheets
-        await saveToGoogleSheets(data); // <-- You implement this
+        const response = await fetch('/api/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
 
-        // 2. Send Email via Resend
-        await sendConfirmationEmail(data.email, data.firstName); // <-- You implement this
+        let result;
+        try {
+          result = await response.json();
+        } catch (jsonErr) {
+          throw new Error('Server returned non-JSON response (likely an HTML error page)');
+        }
 
-        // 3. Add to CRM/mailing list (optional)
-        // await addToMailingList(data);
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Unknown error from server');
+        }
 
         return { success: true };
       } catch (err) {
-        console.error("Backend submission failed:", err);
+        console.error('Backend submission failed:', err);
         return { success: false, error: err };
       }
     };
+
 
 
   const handleFormSubmit = async (e: FormEvent) => {
@@ -162,15 +171,15 @@ export default function IG12SimplifiedLanding() {
                 <div className="h-px bg-primary w-full"></div>
 
                 {/* Subtitle */}
-                <p className="text-lg md:text-xl text-muted-foreground mt-4 font-medium tracking-wide text-center">
+                <p className="text-lg md:text-2xl text-primary mt-4 font-medium tracking-wide text-center">
                   R&D FOR CIVIC INNOVATION
                 </p>
 
                 {/* Explainer */}
                 <p className="mt-8 text-base md:text-lg text-muted-foreground leading-relaxed text-center max-w-2xl mx-auto">
-                  We ask provocative questions about place, community, culture and systems to explore meaningful answers.
+                  We begin with bold questions - about how places shape us, how communities thrive and how systems succeed or fail.
                   <br /><br />
-                  Operating at the intersection of creativity, culture, community and critical inquiry – developing tools, insights and strategies to make our shared spaces and systems more inclusive, visible and meaningful.
+                  At the crossroads of design, culture and critical inquiry, we craft tools and strategies that uncover unseen patterns, amplify shared voices and reimagine the infrastructures of everyday life.
                 </p>
               </div>
             </div>
@@ -271,7 +280,7 @@ export default function IG12SimplifiedLanding() {
                       <div className="space-y-2">
                         <label
                           htmlFor="firstName"
-                          className="text-xs text-muted-foreground font-medium tracking-widest uppercase block"
+                          className="text-xs text-primary font-medium tracking-widest uppercase block"
                         >
                           First Name
                         </label>
@@ -283,14 +292,14 @@ export default function IG12SimplifiedLanding() {
                           value={formData.firstName}
                           onChange={(e) => handleInputChange("firstName", e.target.value)}
                           placeholder={placeholders.firstName}
-                          className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-muted-foreground focus:outline-none focus:border-primary/80 transition-colors"
+                          className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-gray-400 focus:outline-none focus:border-primary/80 transition-colors"
                         />
                       </div>
 
                       <div className="space-y-2">
                         <label
                           htmlFor="lastName"
-                          className="text-xs text-muted-foreground font-medium tracking-widest uppercase block"
+                          className="text-xs text-primary font-medium tracking-widest uppercase block"
                         >
                           Last Name
                         </label>
@@ -302,7 +311,7 @@ export default function IG12SimplifiedLanding() {
                           value={formData.lastName}
                           onChange={(e) => handleInputChange("lastName", e.target.value)}
                           placeholder={placeholders.lastName}
-                          className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-muted-foreground focus:outline-none focus:border-primary/80 transition-colors"
+                          className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-gray-400 focus:outline-none focus:border-primary/80 transition-colors"
                         />
                       </div>
                     </div>
@@ -310,7 +319,7 @@ export default function IG12SimplifiedLanding() {
                     <div className="space-y-2">
                       <label
                         htmlFor="email"
-                        className="text-xs text-muted-foreground font-medium tracking-widest uppercase block"
+                        className="text-xs text-primary font-medium tracking-widest uppercase block"
                       >
                         Email Address
                       </label>
@@ -322,7 +331,7 @@ export default function IG12SimplifiedLanding() {
                         value={formData.email}
                         onChange={(e) => handleInputChange("email", e.target.value)}
                         placeholder={placeholders.email}
-                        className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-muted-foreground focus:outline-none focus:border-primary/80 transition-colors"
+                        className="w-full px-4 py-3 bg-background border-2 border-primary text-primary placeholder:text-gray-400 focus:outline-none focus:border-primary/80 transition-colors"
                       />
                     </div>
 
@@ -355,8 +364,8 @@ export default function IG12SimplifiedLanding() {
                       </div>
                       <h3 className="text-xl font-bold text-primary">Thank You!</h3>
                       <p className="text-muted-foreground leading-relaxed">
-                        Thank you for signing up, {formData.firstName}! We'll be in touch soon with early access to our
-                        strategic research platform.
+                        Thank you for signing up, {formData.firstName}! We'll be in touch to share our manifesto and 
+                        keep you up to date with our unfolding research.
                       </p>
                       <div className="w-16 h-px bg-primary mx-auto"></div>
                       <p className="text-xs text-muted-foreground uppercase tracking-widest">Welcome to IG12</p>
